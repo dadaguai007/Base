@@ -1,0 +1,10 @@
+function printprogress(k, iteration)
+% total bar:40.
+    progress = floor(k / iteration * 100);
+    barlength = floor(progress * 40 / 100;
+    equalbar = repmat('=', 1, )
+    fprintf(1,'',progress);
+    if k == iteration
+        fprintf(1, '\n==================Over==================\n');
+    end
+end

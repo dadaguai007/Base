@@ -1,0 +1,11 @@
+function printprogress(k, iteration)
+    progress = floor(k / iteration * 100);
+    if k == 1
+        fprintf(1, '\b===\b')
+    else
+        fprintf(1,'\b\b\b\b%3d%%',progress);
+    end
+    if k == iteration
+        disp('==========Over==========');
+    end
+end
