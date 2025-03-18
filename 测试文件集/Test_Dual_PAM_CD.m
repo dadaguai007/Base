@@ -17,7 +17,7 @@ Vb = -Vpi/2;
 
 
 param=struct();
-param.Ltotal = 80; %km
+param.Ltotal = 100; %km
 param.Lspan =10;
 param.hz= 0.5;
 param.alpha=0.2;
@@ -81,6 +81,11 @@ for i=1:length(sigTx)
     sigTx_reverse(i)=(-1).^i*sigTx(i);
 end
 
+% phase noise 
+data_num=1e6;
+lw      = 1e3;    % laser linewidth
+phi_pn_lo = phaseNoise(lw, data_num, Ta);
+sigLO = exp(1j * phi_pn_lo);
 
 % Alamouti Code
 symbolsUp = upsample(symbTx, SpS);
@@ -95,12 +100,14 @@ Code=[codedData,codedData2];
 codedData_MDRC=alamouti_code_pam(sigTx);
 
 
-
+codedData_Upper_lower = Upper_Lower_code_pam(sigLO);
 %LO
 Pi_dBm = 10;
 Pi = 10^(Pi_dBm/10)*1e-3; %W
 Ai= sqrt(Pi);
 Pin=Ai;
+
+
 % EA放大
 amp_factor=0.1;
 
@@ -116,8 +123,8 @@ I_x=(E_x).*conj(E_x);
 Vbias1=Vpi/4;
 Vbias2=-Vpi/4;
 
-VRF1=amp_factor*codedData_MDRC(1,:);
-VRF2=amp_factor*codedData_MDRC(2,:);
+VRF1=amp_factor*codedData(1,:);
+VRF2=amp_factor*codedData(2,:);
 [Eout] = MZM_DualDrive(Pin,VRF1,VRF2,Vbias1,Vbias2,Vpi,1);
 
 Eo=ssfm(Eout,param);
@@ -132,9 +139,13 @@ for i=1:length(I_pd)/2
 end
 
 
-I_add_one=I_add(1:length(I_add)/2);
-I_add_two=I_add(length(I_add)/2+1:end);
-
-test=I_add_one+I_add_two;
+% I_add_one=I_add(1:length(I_add)/2);
+% I_add_two=I_add(length(I_add)/2+1:end);
+% 
+% test=I_add_one+I_add_two;
 figure;
-mon_ESA(test,Fs);
+mon_ESA(I_odd,Fs);
+figure;
+mon_ESA(I_even,Fs);
+figure;
+mon_ESA(I_add,Fs);
