@@ -4,9 +4,7 @@ N=12;%段数
 tau_mean = 3; % average tau 3ps
 sigma = 0.01; % variance
 % 每个光纤段生成一个随机的初始相位，模拟光脉冲在光纤中的随机偏振态变化
-zeta0 = rand(N,1)*2*pi;
-eta0 = rand(N,1)*2*pi;
-kappa0 = rand(N,1)*2*pi;
+
 Tau = sqrt(3*pi/(8*N))*(1+sigma*randn(N,1)).*tau_mean; %ti的取值,分为N段
 fs=10e3;
 % 时间轴
@@ -51,21 +49,23 @@ end
 
 % PMD动态建模
 % U_i 为横轴为时间T，纵轴为频率w
+
+omega=cell(1,length(w));
 for j=1:length(w)
     for i=1:length(T)
-        U=1;
+        U=single(:,i);
         for K=1:N
             H=[oo11(K,i),oo12(K,i);oo21(K,i),oo22(K,i)];
             B=[ee(K,j),0;0,ff(K,j)];
-            if 1
-                U=U*H*B;
-            else
-                U=U*H;
-                U_f=fft(U);
-                U=ifft(U_f.*B);
-            end
+           
+            U1=H*U;
+            U_f=fft(U1);
+            U1=ifft(B*U_f);
+            U=U1;
         end
         H_N1=[oo11(N+1,i),oo12(N+1,i);oo21(N+1,i),oo22(N+1,i)];
-        U_i{j,i}=U*H_N1;
+        single_out(:,i)=U*H_N1;
     end
+    omega{j}=single_out;
 end
+

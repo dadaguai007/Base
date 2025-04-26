@@ -1,7 +1,7 @@
 clc;clear;close all;
-
-SpS = 6;
-Rs  = 60e9;          
+addpath('D:\BIT_PhD\Base_Code\Codebase_using\')
+SpS = 4;
+Rs  = 10e9;          
 Ts  = 1/Rs ;         
 Fs  = SpS*Rs;    
 Ta  = 1/Fs;
@@ -59,13 +59,13 @@ symbolsUp = upsample(symbTx, SpS);
 pulse = pulseShape('nrz', SpS);
 pulse = pulse./ max(abs(pulse));
 % filter pulse
-% sigTx  = firFilter(pulse, symbolsUp);
+sigTx  = firFilter(pulse, symbolsUp);
 
 % %Pulso
-hsqrt = rcosdesign(0.01,256,SpS,'sqrt');  
-% hsqrt=hsqrt./max(abs(hsqrt));
-% % pulse shaping
-sigTx=conv(symbolsUp,hsqrt,'same');
+% hsqrt = rcosdesign(0.01,256,SpS,'sqrt');  
+% % hsqrt=hsqrt./max(abs(hsqrt));
+% % % pulse shaping
+% sigTx=conv(symbolsUp,hsqrt,'same');
 
 % Plota sinal
 t = (0:length(symbTx)-1) * (Ta / 1e-9);
@@ -74,9 +74,9 @@ figure;
 plot(t(idX), sigTx(idX),LineWidth=1)
 ylim([-1.5,1.5])
 title('Tx')
+
 %psd
 plot_spectrum(sigTx,Fs);
-
 
 
 %mzm

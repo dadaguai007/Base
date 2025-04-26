@@ -17,9 +17,9 @@ Vb = -Vpi/2;
 
 
 param=struct();
-param.Ltotal = 100; %km
-param.Lspan =10;
-param.hz= 0.5;
+param.Ltotal = 10; %km
+param.Lspan =5;
+param.hz= 0.1;
 param.alpha=0.2;
 param.D = 16;
 param.gamma = 1.3;
@@ -71,7 +71,7 @@ end
 symbolsUp_reverse = upsample(res1, SpS);
 
 % %Pulso
-hsqrt = rcosdesign(0.01,256,SpS,'sqrt');
+hsqrt = rcosdesign(0.5,256,SpS,'sqrt');
 hsqrt=hsqrt./max(abs(hsqrt));
 % pulse shaping
 sigTx=conv(symbolsUp_reverse,hsqrt,'same');
@@ -91,6 +91,7 @@ sigLO = exp(1j * phi_pn_lo);
 symbolsUp = upsample(symbTx, SpS);
 sigTx_alamouti=conv(symbolsUp,hsqrt,'same');
 codedData = alamouti_code_pam(sigTx_alamouti);
+
 % 符号相反的Alamouti Code
 codedData2 = alamouti_code_pam_reverse(sigTx_alamouti);
 % 测试两个向量组进行相加，
@@ -99,8 +100,11 @@ Code=[codedData,codedData2];
 % MDRC码进行Alamouti编码
 codedData_MDRC=alamouti_code_pam(sigTx);
 
-
+% 奇数为负，偶数为正
 codedData_Upper_lower = Upper_Lower_code_pam(sigLO);
+
+% Alamouti——相加编码 
+codedData3 = alamouti_code_pam_linear(sigTx_alamouti);
 %LO
 Pi_dBm = 10;
 Pi = 10^(Pi_dBm/10)*1e-3; %W
@@ -112,7 +116,7 @@ Pin=Ai;
 amp_factor=0.1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       mzm     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Sig_Tx=amp_factor*codedData(1,:);
+Sig_Tx=amp_factor*codedData3(1,:);
 sigTxo = mzm(Pin, Sig_Tx, Vb,Vpi);
 
 E_x=ssfm(sigTxo,param);
@@ -123,13 +127,13 @@ I_x=(E_x).*conj(E_x);
 Vbias1=Vpi/4;
 Vbias2=-Vpi/4;
 
-VRF1=amp_factor*codedData(1,:);
-VRF2=amp_factor*codedData(2,:);
+VRF1=amp_factor*codedData3(1,:);
+VRF2=amp_factor*codedData3(2,:);
 [Eout] = MZM_DualDrive(Pin,VRF1,VRF2,Vbias1,Vbias2,Vpi,1);
 
 Eo=ssfm(Eout,param);
 I_pd= (Eo).*conj(Eo);
-
+% I=(Eo).*conj(Eo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   DD-MZM 奇偶相加                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i=1:length(I_pd)/2
     I_odd(i)=I_pd(2*i-1);
@@ -149,3 +153,5 @@ figure;
 mon_ESA(I_even,Fs);
 figure;
 mon_ESA(I_add,Fs);
+figure;
+mon_ESA(I_pd,Fs);
